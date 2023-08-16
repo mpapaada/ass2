@@ -1,0 +1,15 @@
+.info{
+    background-color: rgb(25, 152, 255); 
+}
+
+.success{
+    background-color: rgb(32, 190, 0); 
+}
+
+.warning{
+    background-color: rgb(255, 251, 25); 
+}
+
+.error{
+    background-color: rgb(255, 25, 25); 
+}
