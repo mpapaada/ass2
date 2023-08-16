@@ -1,4 +1,4 @@
-export default function log() {
+export default function Log() {
   return (
     <div>log</div>
   )

@@ -1,11 +1,17 @@
+import {Header} from './components';
+import { Home, History, Log, Login, Game } from './pages';
 
 import './App.css';
+
 
 function App() {
   return ( 
     <>
-      <header className='header'>Game</header> 
-      <main className='main'></main>
+      <Header /> 
+      <main className='main'>
+        {/* <Home /> */}
+        <Login />
+      </main>
     </>
   )
 }

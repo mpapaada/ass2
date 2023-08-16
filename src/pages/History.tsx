@@ -1,5 +1,5 @@
 
-export default function history() {
+export default function History() {
   return (
     <div>history</div>
   )

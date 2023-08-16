@@ -1,5 +1,14 @@
+import style  from "./Header.module.css"
+
 export default function Header() {
   return (
-    <div>Header</div>
+    <header className={style.header}>
+      <div className={style.container}>
+        <span>GAME</span>
+        <div className={style.actions}>
+          <button className={style.action}>Login</button>
+        </div>
+      </div>
+    </header>
   )
 }
