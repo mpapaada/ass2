@@ -1,33 +1,53 @@
 
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { SizeContext, UserContext } from "../context";
+import { Navigate, useNavigate } from "react-router-dom";
 import {Button, Select, Option} from "../components"
 
 import style from "./Home.module.css"
 
 export default function Home() {
-  const [size, setSize] = useState('')
+  const {user} = useContext(UserContext)
+  const {setSize} = useContext(SizeContext)
+  const [value, setValue] = useState('')
+  const navigate = useNavigate()
   const minSize = 5
   const maxSize = 20
+  const selValue = 15
 
-  const sizes: number[] = []
+ 
+  const options: number[] = []
   for(let i = minSize; i <= maxSize; i++){
-    sizes.push(i)
+    options.push(i)
   }
+
+  const onSubmit = () => {
+    if(!user){
+      navigate('/login')
+    } else {
+      setSize(parseInt(value))
+      if(!value)setSize(selValue)
+      navigate('/game')
+    }
+  }
+
+  
 
   return (
     <form className={style.container} onSubmit={(e) => {
+      
+      console.log(value)
       e.preventDefault()
-      console.log(size)
+      onSubmit()
       }}>
       <Select 
         name="size" 
-        placeholder="15" 
-        value={size} 
+        defaultValue={selValue}
         onChange={(e) => {
-            setSize(e.target.value)
+            setValue(e.target.value)
           }}
       >
-        {sizes.map((i) =>(
+        {options.map((i) =>(
           <Option key = {i} value={i}/>
         ))
       }
