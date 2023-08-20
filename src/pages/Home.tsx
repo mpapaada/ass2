@@ -1,7 +1,7 @@
 
 import { useState, useContext } from "react";
 import { SizeContext, UserContext } from "../context";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {Button, Select, Option} from "../components"
 
 import style from "./Home.module.css"

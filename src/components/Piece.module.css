@@ -1,0 +1,28 @@
+.piece {
+    height: var(--cell-size);
+    width: var(--cell-size);
+    border-radius: 100%;
+    border: 1px solid black;
+    z-index: 10;
+}
+
+.empty {
+    height: 0.4rem;
+    width: 0.4rem;
+    margin: calc((var(--cell-size) * 0.5));;
+    border-radius: 100%;
+    background-color: black;
+}
+
+
+.white {
+    background-color: white;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.black {
+    background-color: black;
+    cursor: not-allowed;
+    opacity: 1;
+}

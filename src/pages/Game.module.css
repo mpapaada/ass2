@@ -1,0 +1,14 @@
+.board {
+    display: grid;
+    align-items: center;
+    align-content: center;
+    justify-items: center;
+    justify-content: center;
+    /* flex-direction: column; */
+    row-gap: 0.5rem;
+    column-gap: 0.5rem;
+    background-color: blanchedalmond;
+    border: 2px solid black;
+    border-radius: 1rem;
+    overflow: hidden;
+}
