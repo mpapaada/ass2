@@ -3,14 +3,18 @@ import { Navigate, useNavigate } from "react-router-dom"
 import { UserContext, SizeContext, TurnContext } from "../context"
 import {Piece, Button} from "../components"
 import { PIECE_STATUS, TURN } from "../Constants"
+import { useLocalStorage } from '../hooks';
+
 
 import style from './Game.module.css'
 
 export default function Game() {
+  const [selectPiece, saveSelectPiece] = useLocalStorage<number[][]>('game', [[],[]])
+
   const { size } = useContext(SizeContext)
   const { user } = useContext(UserContext)
   const { turn, setPlayerTurn } = useContext(TurnContext)
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
 
   useEffect(() => {setPlayerTurn(TURN.BLACK)}, [] )
@@ -28,8 +32,22 @@ export default function Game() {
         ))}
       </div>
       <div className={style.buttons}>
-        <Button className={style.button}>Reset</Button>
-        <button className={style.button}>Leave</button>
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          saveSelectPiece([[],[]])
+        }
+          }>
+          <Button className={style.button}>Reset</Button>
+        </form>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault()
+            navigate('/')
+          }}
+        >
+          <Button className={style.button}>Leave</Button>
+        </form>
+
       </div>
     </div>
   )
