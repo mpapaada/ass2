@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import {Header, UserProvider, SizeProvider, TurnProvider} from './components';
+import {Header, UserProvider, SizeProvider, TurnProvider, SessionProvider} from './components';
 import { Home, History, Log, Login, Game } from './pages';
 
 import style from './App.module.css';
@@ -8,6 +8,7 @@ import style from './App.module.css';
 function App() {
   return ( 
     <UserProvider>
+      <SessionProvider>
       <SizeProvider>
         <TurnProvider>
           <Header /> 
@@ -23,6 +24,8 @@ function App() {
             </main>
         </TurnProvider>
       </SizeProvider>
+      </SessionProvider>
+
     </UserProvider>
   )
 }
