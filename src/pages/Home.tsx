@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <form className={style.container} onSubmit={(e) => {
       
-      console.log(value)
+      // console.log(value)
       e.preventDefault()
       onSubmit()
       }}>

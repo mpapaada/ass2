@@ -1,33 +1,40 @@
 import { TurnContext, SizeContext, SessionContext } from '../context'
-import { useState } from 'react'
-import { PIECE_STATUS, TURN } from '../Constants'
+import { TURN } from '../Constants'
 import { useContext } from 'react';
 import { useLocalStorage } from '../hooks';
+import { GameType } from '../types';
 
 import style from './Piece.module.css'
 
 type PieceProps = {
     id:number
-    state:PIECE_STATUS
+    printID?:number
+    color?:TURN
+    readOnly?:boolean
 }
 
 
 
-export default function Piece(props:PieceProps, ) {
-    const {id, state} = props
-    const {session, setSession} = useContext(SessionContext)
+export default function Piece(props:PieceProps ) {
+    const {id, printID, color,readOnly} = props
+    const {session} = useContext(SessionContext)
     const {turn, changeTurn} = useContext(TurnContext)
     const {size} = useContext(SizeContext)
-    const [status, setStatus] = useState(PIECE_STATUS.EMPTY)
-    const [selectPiece, saveSelectPiece] = useLocalStorage<number[][]>(`game-${session?.id}`, [[],[]])
-    const [gameLog, setGameLog] = useLocalStorage<Object[]>('games', [])
+    const [selectPiece, saveSelectPiece] = useLocalStorage<GameType>(`game`, {
+        size:size?.size!,
+        black:[],
+        white:[],
+        result:''
+    })
 
     const getClassName = () => {
         const className = style.piece
+
+
         switch(true) {
-            case selectPiece[0].includes(id):
+            case selectPiece.black.includes(id) || color === TURN.BLACK:
                 return `${className} ${style.black} ${id}`
-            case selectPiece[1].includes(id):
+            case selectPiece.white.includes(id) || color === TURN.WHITE:
                 return `${className} ${style.white} ${id}`
             default:
                 return `${className} ${style.empty} ${id}`
@@ -37,32 +44,41 @@ export default function Piece(props:PieceProps, ) {
     
 
     const handleClick = () => {
-        if(!(selectPiece[0].includes(id) || selectPiece[1].includes(id))){
-            if(turn===TURN.WHITE) {
+        console.log(size?.size, selectPiece.size)
+        if(!(readOnly || selectPiece.black.includes(id) || selectPiece.white.includes(id) || selectPiece.result)){
+             if(turn===TURN.WHITE) {
                 if(selectPiece != null){
-                    saveSelectPiece([selectPiece[0],[...selectPiece[1],id]])
+                    saveSelectPiece({
+                        size:size?.size!,
+                        black:selectPiece.black,
+                        white:[...selectPiece.white,id],
+                        result:checkWin()
+                    })
                 }
             }
             if(turn===TURN.BLACK) {
                 if(selectPiece != null){
-                    saveSelectPiece([[...selectPiece[0],id],selectPiece[1]])
+                    saveSelectPiece({
+                        size:size?.size!,
+                        black:[...selectPiece.black,id],
+                        white:selectPiece.white,
+                        result:checkWin()
+                    })
                 }
             }
             const currentTurn = turn === TURN.BLACK?TURN.WHITE: TURN.BLACK
-            console.log(...selectPiece)
             changeTurn(currentTurn)
             checkWin()
         } 
     }
 
-    const checkUpDown= (turnIndex:number, row:number) => {
+    const checkUpDown= (pieceArray:number[], row:number) => {
         let score = 1;
         down(id);
         function down(piece:number) {
             const pieceDown = piece-row
-            if (selectPiece[turnIndex].includes(pieceDown)) {
+            if (pieceArray.includes(pieceDown)) {
                 score++
-                // console.log(score)
                 down(pieceDown)
             } else {
                 up(id)
@@ -70,9 +86,8 @@ export default function Piece(props:PieceProps, ) {
         }
         function up(piece:number) {
             const pieceUp = piece+row
-            if (selectPiece[turnIndex].includes(pieceUp)) {
+            if (pieceArray.includes(pieceUp)) {
                 score++
-                // console.log(score)
 
                 up(pieceUp)
             } 
@@ -80,17 +95,15 @@ export default function Piece(props:PieceProps, ) {
         return score
     }
 
-    const checkLeftRight= (turnIndex:number,row:number) => {
+    const checkLeftRight= (pieceArray:number[],row:number) => {
         let score = 1;
         const rowIndex = Math.floor(id/row)
         left(id);
 
         function left(piece:number) {
             const pieceLeft = piece - 1
-            // console.log( selectPiece[turnIndex], pieceLeft)
-            if (selectPiece[turnIndex].includes(pieceLeft) && Math.floor(pieceLeft/row) === rowIndex) {
+            if (pieceArray.includes(pieceLeft) && Math.floor(pieceLeft/row) === rowIndex) {
                 score++
-                console.log('you got here')
                 left(pieceLeft)
             } else {
                 right(id)
@@ -99,25 +112,22 @@ export default function Piece(props:PieceProps, ) {
 
         function right(piece:number) {
             const pieceRight = piece + 1
-            console.log( selectPiece[turnIndex], pieceRight)
 
-            if (selectPiece[turnIndex].includes(pieceRight) && Math.floor(pieceRight/row) === rowIndex) {
+            if (pieceArray.includes(pieceRight) && Math.floor(pieceRight/row) === rowIndex) {
                 score++
-                console.log(score)
                 right(pieceRight)
             } 
         }
         return score
     }
 
-    const checkDiagonalRight= (turnIndex:number,row:number) => {
+    const checkDiagonalRight= (pieceArray:number[],row:number) => {
         let score = 1;
         upRight(id);
         function upRight(piece:number) {
             const pieceUpRight = piece + row - 1
-            if (selectPiece[turnIndex].includes(pieceUpRight)) {
+            if (pieceArray.includes(pieceUpRight)) {
                 score++
-                // console.log(score)
                 upRight(pieceUpRight)
             } else {
                 downLeft(id)
@@ -125,23 +135,21 @@ export default function Piece(props:PieceProps, ) {
         }
         function downLeft(piece:number) {
             const pieceDownLeft = piece - row  + 1
-            if (selectPiece[turnIndex].includes(pieceDownLeft)) {
+            if (pieceArray.includes(pieceDownLeft)) {
                 score++
-                // console.log(score)
                 downLeft(pieceDownLeft)
             } 
         }
         return score
     }
 
-    const checkDiagonalLeft= (turnIndex:number, row:number) => {
+    const checkDiagonalLeft= (pieceArray:number[], row:number) => {
         let score = 1;
         left(id);
         function left(piece:number) {
             const pieceLeft = piece - row - 1
-            if (selectPiece[turnIndex].includes(pieceLeft)) {
+            if (pieceArray.includes(pieceLeft)) {
                 score++
-                // console.log(score)
                 left(pieceLeft)
             } else {
                 right(id)
@@ -149,9 +157,8 @@ export default function Piece(props:PieceProps, ) {
         }
         function right(piece:number) {
             const pieceRight = piece + row + 1
-            if (selectPiece[turnIndex].includes(pieceRight)) {
+            if (pieceArray.includes(pieceRight)) {
                 score++
-                // console.log(score)
 
                 right(pieceRight)
             } 
@@ -160,28 +167,18 @@ export default function Piece(props:PieceProps, ) {
     }
 
     const checkWin = () => {
-        const turnIndex = turn === TURN.BLACK? 0:1
+        const pieceArray = turn === TURN.BLACK? selectPiece.black:selectPiece.white
         const row = size?.size ?? 15
-        console.log("total moves: ",selectPiece[0].length + selectPiece[1].length + 1,", Max moves: ",row*row)
-        if(checkUpDown(turnIndex, row) >= 5 || checkLeftRight(turnIndex,row) >= 5 || checkDiagonalRight(turnIndex, row) >= 5 || checkDiagonalLeft(turnIndex, row) >= 5){
+        if(checkUpDown(pieceArray, row) >= 5 || checkLeftRight(pieceArray,row) >= 5 || checkDiagonalRight(pieceArray, row) >= 5 || checkDiagonalLeft(pieceArray, row) >= 5){
             console.log(`${turn} Wins`)
-            setGameLog([...gameLog,{"game":{
-                "black": selectPiece[0],
-                "white": selectPiece[1],
-                "winner": turn
-
-            }}])
-            setSession(gameLog.length)
-        }else if(selectPiece[0].length + selectPiece[1].length + 1 === row*row){
-            setGameLog([...gameLog,{"game":{
-                "black": selectPiece[0],
-                "white": selectPiece[1],
-                "winner": "DRAW"
-
-            }}])
+            return `${turn}`
+        }else if(selectPiece.black.length + selectPiece.white.length + 1 === row*row){
+            return'DRAW'
+        }else{
+            return ''
         }
     }
 
 
-  return <div className={getClassName()}  onClick={handleClick} />
+  return <div className={getClassName()}  onClick={handleClick} > {printID?printID:""} </div>
 }

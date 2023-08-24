@@ -2,23 +2,36 @@ import { useContext, useEffect } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
 import { UserContext, SizeContext, TurnContext, SessionContext} from "../context"
 import {Piece, Button} from "../components"
-import { PIECE_STATUS, TURN } from "../Constants"
+import { TURN } from "../Constants"
 import { useLocalStorage } from '../hooks';
+import { GameType } from "../types"
 
 
 import style from './Game.module.css'
 
 export default function Game() {
   const {session, setSession} = useContext(SessionContext)
-  const [selectPiece, saveSelectPiece] = useLocalStorage<number[][]>(`game-${session?.id}`, [[],[]])
-  const [games] = useLocalStorage<Object[]>('games', [])
   const { size } = useContext(SizeContext)
+  const [selectPiece, saveSelectPiece] = useLocalStorage<GameType>(`game`, {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    size:size?.size!,
+    black:[],
+    white:[],
+    result:''
+})
+  const [games, setGameLog] = useLocalStorage<GameType[]>('games', [])
   const { user } = useContext(UserContext)
   const { turn, setPlayerTurn } = useContext(TurnContext)
   const navigate = useNavigate()
 
 
   useEffect(() => {
+    saveSelectPiece({
+      size:size?.size!,
+      black:[],
+      white:[],
+      result:''
+  })
     setPlayerTurn(TURN.BLACK)
     setSession(games.length)
   }, [] )
@@ -27,18 +40,45 @@ export default function Game() {
   const row = size?.size ?? 15
   
 
+  const leave = () => {
+    if(selectPiece.result){
+      setGameLog([...games,selectPiece])
+      saveSelectPiece({
+        size:size?.size!,
+        black:[],
+        white:[],
+        result:''
+    })
+    
+    navigate('/games')
+    }else{
+      saveSelectPiece({
+        size:size?.size!,
+        black:[],
+        white:[],
+        result:''
+    })
+    navigate('/')
+    }
+  }
+
   return (
     <div>
       <div>{`Current Turn: ${turn}`}</div>
       <div className={style.board} style={{gridTemplateColumns: `repeat(${row}, 1fr)`}}>
         {[...Array(row*row)].map((_, index) => (
-          <Piece key={`piece-${index}`} id={index} state={PIECE_STATUS.EMPTY}/>
+          <Piece key={`piece-${index}`} id={index} />
         ))}
       </div>
       <div className={style.buttons}>
         <form onSubmit={(e) => {
           e.preventDefault()
-          saveSelectPiece([[],[]])
+          saveSelectPiece({
+            size:size?.size!,
+            black:[],
+            white:[],
+            result:''
+        })
           setPlayerTurn(TURN.BLACK)
         }
           }>
@@ -47,7 +87,7 @@ export default function Game() {
         <form 
           onSubmit={(e) => {
             e.preventDefault()
-            navigate('/')
+            leave()
           }}
         >
           <Button className={style.button}>Leave</Button>
